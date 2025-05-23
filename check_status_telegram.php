@@ -18,9 +18,9 @@ $chatIds = [
 ];
 
 $pratiche = [
-    '25FE001485',
-    '34AB001236',
-    '42CD003567'
+    'XXXXXXXXXX',
+    'XXXXXXXXXX',
+    'XXXXXXXXXX'
 ];
 
 // === FUNZIONE: Recupera lo stato di una pratica dal sito ===
