@@ -45,6 +45,7 @@ function ottieniStatoPratica($url)
         strpos($htmlLower, 'respinta') !== false ||
         strpos($htmlLower, 'non esiste') !== false ||
         strpos($htmlLower, 'non è presente') !== false ||
+        strpos($htmlLower, 'Numero di caratteri non validi') !== false ||
         strpos($htmlLower, 'errore') !== false
     ) {
         return ['stato' => '❗ Pratica non trovata o rifiutata', 'successo' => true];
