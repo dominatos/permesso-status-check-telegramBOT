@@ -1,13 +1,14 @@
 <?php
 /**
- * ===============================
+ * ===================================
  * MONITORAGGIO PRATICHE QUESTURA
- * ===============================
- * 
+ * ===================================
+ *
  * Questo script controlla lo stato di più pratiche per il permesso di soggiorno
  * e invia notifiche su Telegram.
- * 
- * In caso di rifiuto, errore o stato incerto, il messaggio viene inviato comunque.
+ *
+ * Con l'opzione `$notificaSempre`, è possibile scegliere se ricevere notifiche
+ * solo in caso di cambiamento dello stato oppure sempre.
  */
 
 $botToken = 'IL_TUO_TOKEN_DEL_BOT';
@@ -16,6 +17,9 @@ $chatIds = [
     'CHAT_ID_2',
     'CHAT_ID_3'
 ];
+
+// Se impostato su `true`, invierà notifiche sempre, anche se lo stato non cambia
+$notificaSempre = true;
 
 $pratiche = [
     'XXXXXXXXXX',
@@ -31,8 +35,9 @@ function ottieniStatoPratica($url)
         return ['stato' => '❌ Errore nel caricamento della pagina', 'successo' => false];
     }
 
+    // Проверка на готовность документа к выдаче
     if (strpos($html, 'documento di soggiorno è pronto per la consegna') !== false) {
-        return ['stato' => '✅ Pronto per il ritiro', 'successo' => true];
+        return ['stato' => '✅ Documento pronto per il ritiro', 'successo' => true];
     }
 
     if (preg_match('/Stato del suo permesso di soggiorno: (.*?)\./', $html, $matches)) {
@@ -45,7 +50,7 @@ function ottieniStatoPratica($url)
         strpos($htmlLower, 'respinta') !== false ||
         strpos($htmlLower, 'non esiste') !== false ||
         strpos($htmlLower, 'non è presente') !== false ||
-        strpos($htmlLower, 'Numero di caratteri non validi') !== false ||
+        strpos($htmlLower, 'numero di caratteri non validi') !== false ||
         strpos($htmlLower, 'errore') !== false
     ) {
         return ['stato' => '❗ Pratica non trovata o rifiutata', 'successo' => true];
@@ -59,26 +64,31 @@ foreach ($pratiche as $codicePratica) {
     $url = "https://questure.poliziadistato.it/stranieri?lang=italian&mime=&pratica=$codicePratica";
     $filePrecedente = __DIR__ . "/stato_$codicePratica.txt";
 
+    // Recupera lo stato della pratica dal sito
     $risultato = ottieniStatoPratica($url);
     $statoCorrente = $risultato['stato'];
 
+    // Legge il precedente stato salvato su file (se esiste)
     $statoPrecedente = file_exists($filePrecedente) ? trim(file_get_contents($filePrecedente)) : '';
 
     $link = "[Apri la pagina]($url)";
 
+    // Se lo stato è critico, forza l'invio del messaggio
     $forzaInvio = in_array($statoCorrente, [
         '❗ Pratica non trovata o rifiutata',
         '⚠️ Stato non determinato',
         '❌ Errore nel caricamento della pagina'
     ]);
 
-    if ($statoCorrente !== $statoPrecedente || $forzaInvio) {
-        $messaggio = "🔔 *Stato aggiornato!*\n\n*Pratica:* `$codicePratica`\n📄 Nuovo stato: *$statoCorrente*\n\n$link";
+    // Controlla se è necessario inviare la notifica
+    if ($notificaSempre || $statoCorrente !== $statoPrecedente || $forzaInvio) {
+        $messaggio = "🔔 *Stato aggiornato!*\n\n*Pratica:* `$codicePratica`\n📄 Stato attuale: *$statoCorrente*\n\n$link";
         file_put_contents($filePrecedente, $statoCorrente);
     } else {
-        continue; // Non inviare nulla se lo stato è lo stesso e non è critico
+        continue; // Salta l'invio se lo stato non è cambiato e non è critico
     }
 
+    // Invia la notifica Telegram a tutte le chat ID
     foreach ($chatIds as $chatId) {
         $urlTelegram = "https://api.telegram.org/bot$botToken/sendMessage";
         $ch = curl_init();
