@@ -132,7 +132,7 @@ Questo lo eseguirà ogni ora.
 ## ✅ Funzionalità
 
 - Controllo automatico dello stato della pratica
-- Invio su Telegram solo in caso di cambiamento
+- Invio su Telegram solo in caso di cambiamento (OPZIONALE)
 - Rilevamento errori o rifiuti automatico
 - Supporta più pratiche e più chat
 
