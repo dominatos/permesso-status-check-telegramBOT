@@ -62,6 +62,7 @@ function ottieniStatoPratica($url)
 // === PROCESSO PRINCIPALE ===
 foreach ($pratiche as $codicePratica) {
     $url = "https://questure.poliziadistato.it/stranieri?lang=italian&mime=4&pratica=$codicePratica";
+    $url2 = "https://questure.poliziadistato.it/stranieri?lang=italian&mime=&pratica=$codicePratica";
     $filePrecedente = __DIR__ . "/stato_$codicePratica.txt";
 
     // Recupera lo stato della pratica dal sito
@@ -71,7 +72,7 @@ foreach ($pratiche as $codicePratica) {
     // Legge il precedente stato salvato su file (se esiste)
     $statoPrecedente = file_exists($filePrecedente) ? trim(file_get_contents($filePrecedente)) : '';
 
-    $link = "[Apri la pagina]($url)";
+    $link = "[Apri la pagina]($url2)";
 
     // Se lo stato è critico, forza l'invio del messaggio
     $forzaInvio = in_array($statoCorrente, [
