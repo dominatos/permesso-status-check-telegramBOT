@@ -61,7 +61,7 @@ function ottieniStatoPratica($url)
 
 // === PROCESSO PRINCIPALE ===
 foreach ($pratiche as $codicePratica) {
-    $url = "https://questure.poliziadistato.it/stranieri?lang=italian&mime=&pratica=$codicePratica";
+    $url = "https://questure.poliziadistato.it/stranieri?lang=italian&mime=4&pratica=$codicePratica";
     $filePrecedente = __DIR__ . "/stato_$codicePratica.txt";
 
     // Recupera lo stato della pratica dal sito
